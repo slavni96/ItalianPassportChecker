@@ -1,5 +1,7 @@
 # Italian Passport AI Checker
-Italian Passport AI Checker is an automated tool developed by an ChatGPT that checks the availability of appointments for Italian passport applications at local police stations. It uses REST APIs and Telegram notifications to keep users updated on the availability of appointments.
+Italian Passport AI Checker is an automated tool developed by (mostly) ChatGPT that checks the availability of appointments for Italian passport applications at local police stations. It uses REST APIs and Telegram notifications to keep users updated on the availability of appointments.
+
+Telegram channel: [itpassportchecker](https://t.me/itpassportchecker)
 
 ## Requirements
 - Node.js
@@ -18,7 +20,6 @@ npm install
 
 Create a .env file in the root directory of the project and add the following configuration.
 ```
-makefile
 LOCATION=PD
 WAIT_TIME=60
 ENABLE_NOTIFY=TRUE

@@ -1,0 +1,25 @@
+{
+  "name": "italianpassportchecker",
+  "version": "1.0.0",
+  "description": "Italian Passport AI Checker is an automated tool developed by an ChatGPT that checks the availability of appointments for Italian passport applications at local police stations. It uses REST APIs and Telegram notifications to keep users updated on the availability of appointments",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/slavni96/ItalianPassportChecker.git"
+  },
+  "author": "Ivan Sala",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/slavni96/ItalianPassportChecker/issues"
+  },
+  "homepage": "https://github.com/slavni96/ItalianPassportChecker#readme",
+  "dependencies": {
+    "dotenv": "^16.0.3",
+    "node-telegram-bot-api": "^0.61.0",
+    "request": "^2.88.2"
+  }
+}

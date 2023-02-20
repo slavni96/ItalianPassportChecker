@@ -1,9 +1,16 @@
 const request = require('request');
 require('dotenv').config();
+const TelegramBot = require('node-telegram-bot-api');
 
 const location = process.env.LOCATION;
 const waitTime = process.env.WAIT_TIME;
 const enableNotify = process.env.ENABLE_NOTIFY;
+const verbose = process.env.VERBOSE;
+const telegramKey = process.env.TELEGRAM_BOT_TOKEN;
+const telegramChatId = process.env.TELEGRAM_CHATID;
+
+// create a new bot with your bot token
+const bot = new TelegramBot(telegramKey, { polling: false });
 
 const getRandomGUID = () => {
     // Function to generate random GUID
@@ -14,26 +21,42 @@ const getRandomGUID = () => {
     });
 };
 
+const generateHeaders = () => {
+    // Function to generate common Headers
+    var headers =
+    {
+        'Accept':
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'it-IT,it;q=0.9',
+        'Connection': 'keep-alive',
+        'Cache-Control': 'max-age=0',
+        'Upgrade-Insecure-Requests': '1',
+        'Content-Type': 'application/json',
+        'User-Agent': getRandomGUID(),
+        'Host': 'gzip, deflate, br'
+    }
+
+    return headers;
+};
+
 const checkAvailability = () => {
+
     const options = {
-        url: https://www.passaportonline.poliziadistato.it/CittadinoAction.do?codop=resultRicercaRegistiProvincia&provincia=${location},
-        headers: {
-            Accept:
-                'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,/;q=0.8,application/signed-exchange;v=b3;q=0.9',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'it-IT,it;q=0.9',
-            Connection: 'keep-alive',
-            Host: 'gzip, deflate, br',
-            'Cache-Control': 'max-age=0',
-            'Upgrade-Insecure-Requests': '1',
-            'Content-Type': 'application/json',
-            'User-Agent': getRandomGUID(),
-        },
+        url: 'https://www.passaportonline.poliziadistato.it/CittadinoAction.do?codop=resultRicercaRegistiProvincia&provincia=${location}',
+        headers: generateHeaders()
     };
 
     request.get(options, (error, response, body) => {
         if (!error && response.statusCode == 200) {
+            if (verbose == "TRUE") console.log(body);
+
             if (body.includes('<td headers="disponibilita">Si</td>')) {
+
+                bot.sendMessage(telegramChatId, `There is an availability in : ${location}`)
+                    .then(() => console.log('Notification sent successfully'))
+                    .catch((error) => console.error(`Error sending notification: ${error}`));
+
                 const htmlTable = body.substring(
                     body.indexOf('<td headers="disponibilita">Si</td>'),
                     body.indexOf('<td headers="disponibilita">Si</td>') + 500
@@ -42,44 +65,45 @@ const checkAvailability = () => {
                     htmlTable.indexOf('selezionaStruttura'),
                     htmlTable.indexOf('">')
                 );
-                const hrefUrl = https://www.passaportonline.poliziadistato.it/${href};
+                const hrefUrl = 'https://www.passaportonline.poliziadistato.it/${href}';
 
                 const optionsHref = {
                     url: hrefUrl,
-                    headers: {
-                        Accept:
-                            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
-                        'Accept-Encoding': 'gzip, deflate, br',
-                        'Accept-Language': 'it-IT,it;q=0.9',
-                        Connection: 'keep-alive',
-                        Host: 'gzip, deflate, br',
-                        'Cache-Control': 'max-age=0',
-                        'Upgrade-Insecure-Requests': '1',
-                        'Content-Type': 'application/json',
-                        'User-Agent': getRandomGUID(),
-                    },
+                    headers: generateHeaders()
                 };
 
                 request.get(optionsHref, (error, response, body) => {
                     if (!error && response.statusCode == 200) {
                         // Do something with the response
-                        if (enableNotify) {
-                            // Send notification via Telegram bot
-                        }
+                        const message = "There is a new open slot!!"
+
+                        // send a message to the specified chat id
+                        bot.sendMessage(chatId, message)
+                            .then(() => console.log('Notification sent successfully'))
+                            .catch((error) => console.error(`Error sending notification: ${error}`));
                     } else {
                         console.log(`Error: ${error}`);
                     }
                 });
             } else {
                 console.log(`No availability in ${location}`);
+
+                bot.sendMessage(telegramChatId, `No availability in ${location}`)
+                    .then(() => console.log('Notification sent successfully'))
+                    .catch((error) => console.error(`Error sending notification: ${error}`));
             }
         } else {
             console.log(`Error: ${error}`);
+
+            bot.sendMessage(telegramChatId, `Error: ${error}`)
+                .then(() => console.log('Notification sent successfully'))
+                .catch((error) => console.error(`Error sending notification: ${error}`));
         }
 
     });
 };
 
 setInterval(() => {
+    console.log("Starting...")
     checkAvailability();
-}, waitTime * 1000); // Convert seconds to milliseconds and repeat check every X seconds.
+}, waitTime * 100); // Convert seconds to milliseconds and repeat check every X seconds.
