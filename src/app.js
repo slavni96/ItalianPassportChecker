@@ -54,7 +54,7 @@ const checkAvailability = () => {
 
         if (body.includes('<td headers="disponibilita">Si</td>')) {
 
-            bot.sendMessage(telegramChatId, `There is an availability in : ${location}`)
+            bot.sendMessage(telegramChatId, `There is an availability in : ${location}. Book it now: https://www.passaportonline.poliziadistato.it/CittadinoAction.do?codop=resultRicercaRegistiProvincia&provincia=MI`)
                 .then(() => console.log('Notification sent successfully'))
                 .catch((error) => console.error(`Error sending notification: ${error}`));
 
