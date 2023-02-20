@@ -30,7 +30,6 @@ const generateHeaders = () => {
         'Accept-Encoding': 'gzip, deflate, br',
         'Accept-Language': 'it-IT,it;q=0.9',
         Connection: 'keep-alive',
-        Host: 'gzip, deflate, br',
         'Cache-Control': 'max-age=0',
         'Upgrade-Insecure-Requests': '1',
         'Content-Type': 'application/json'
