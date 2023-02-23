@@ -68,10 +68,13 @@ const checkAvailability = () => {
                 if (td.length > 0) {
                     // get the "td" with headers="selezionaStruttura"
                     const href = $(tr).find('td[headers="selezionaStruttura"] a').attr('href');
-                    
-                    bot.sendMessage(telegramChatId, `There is an availability in : ${location}. Book it now: https://www.passaportonline.poliziadistato.it/${href}`)
-                        .then(() => console.log('Notification sent successfully'))
-                        .catch((error) => console.error(`Error sending notification: ${error}`));
+
+                    //exclude
+                    const city = $(tr).find('td[headers="citta"]').text();
+                    if (city != "RHO-PERO" || city != "SESTO SAN GIOVANNI" || city != "CINISELLO BALSAMO")
+                        bot.sendMessage(telegramChatId, `There is an availability in : ${location}. Book it now: https://www.passaportonline.poliziadistato.it/${href}`)
+                            .then(() => console.log('Notification sent successfully'))
+                            .catch((error) => console.error(`Error sending notification: ${error}`));
                 }
             });
         } else {
@@ -87,4 +90,4 @@ const checkAvailability = () => {
 setInterval(() => {
     console.log("Starting...")
     checkAvailability();
-}, waitTime * 100); // Convert seconds to milliseconds and repeat check every X seconds.
+}, waitTime * 10); // Convert seconds to milliseconds and repeat check every X seconds.
