@@ -71,10 +71,21 @@ const checkAvailability = () => {
 
                     //exclude
                     const city = $(tr).find('td[headers="citta"]').text();
-                    if (city != "RHO-PERO" && city != "SESTO SAN GIOVANNI" && city != "CINISELLO BALSAMO")
-                        bot.sendMessage(telegramChatId, `There is an availability in : ${location} - ${city}. Book it now: https://www.passaportonline.poliziadistato.it/${href}`)
-                            .then(() => console.log('Notification sent successfully'))
-                            .catch((error) => console.error(`Error sending notification: ${error}`));
+                    if (city != "RHO-PERO" && city != "SESTO SAN GIOVANNI" && city != "CINISELLO BALSAMO") {
+                        const url = `https://www.passaportonline.poliziadistato.it/${href}`;
+                        console.log(url)
+
+                        const searchParams = new URLSearchParams(new URL(url).search);
+                        const dataParam = searchParams.get('data');
+
+                        if (dataParam && dataParam.trim() !== '') {
+                            bot.sendMessage(telegramChatId, `There is an availability in : ${location} - ${city}. Book it now: ${url}`)
+                                .then(() => console.log('Notification sent successfully'))
+                                .catch((error) => console.error(`Error sending notification: ${error}`))
+                        } else {
+                            console.log('Il parametro "data" non è valorizzato');
+                        }
+                    }
                 }
             });
         } else {
@@ -90,4 +101,4 @@ const checkAvailability = () => {
 setInterval(() => {
     console.log("Starting...")
     checkAvailability();
-}, waitTime * 10); // Convert seconds to milliseconds and repeat check every X seconds.
+}, waitTime * 100); // Convert seconds to milliseconds and repeat check every X seconds.
