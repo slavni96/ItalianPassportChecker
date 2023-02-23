@@ -2,6 +2,7 @@ const request = require('request');
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 const axios = require("axios");
+const cheerio = require('cheerio');
 
 const location = process.env.LOCATION;
 const waitTime = process.env.WAIT_TIME;
@@ -54,45 +55,32 @@ const checkAvailability = () => {
 
         if (body.includes('<td headers="disponibilita">Si</td>')) {
 
-            bot.sendMessage(telegramChatId, `There is an availability in : ${location}. Book it now: https://www.passaportonline.poliziadistato.it/CittadinoAction.do?codop=resultRicercaRegistiProvincia&provincia=MI`)
-                .then(() => console.log('Notification sent successfully'))
-                .catch((error) => console.error(`Error sending notification: ${error}`));
+            // load the HTML into Cheerio
+            const $ = cheerio.load(body);
 
-            // const htmlTable = body.substring(
-            //     body.indexOf('<td headers="disponibilita">Si</td>'),
-            //     body.indexOf('<td headers="disponibilita">Si</td>') + 500
-            // );
-            // const href = htmlTable.substring(
-            //     htmlTable.indexOf('selezionaStruttura'),
-            //     htmlTable.indexOf('">')
-            // );
-            // const hrefUrl = 'https://www.passaportonline.poliziadistato.it/${href}';
+            // find the table with class "imposta_utenti"
+            const table = $('table.imposta_utenti');
 
-            // const optionsHref = {
-            //     url: hrefUrl,
-            //     headers: generateHeaders()
-            // };
-
-            // request.get(optionsHref, (error, response, body) => {
-            //     if (!error && response.statusCode == 200) {
-            //         // Do something with the response
-            //         const message = "There is a new open slot!!"
-
-            //         // send a message to the specified chat id
-            //         bot.sendMessage(chatId, message)
-            //             .then(() => console.log('Notification sent successfully'))
-            //             .catch((error) => console.error(`Error sending notification: ${error}`));
-            //     } else {
-            //         console.log(`Error: ${error}`);
-            //     }
-            // });
+            // loop through each "tr" element in the table
+            table.find('tr').each((i, tr) => {
+                // check if there is a "td" with headers="disponibilita" and value "Si"
+                const td = $(tr).find('td[headers="disponibilita"]:contains("Si")');
+                if (td.length > 0) {
+                    // get the "td" with headers="selezionaStruttura"
+                    const href = $(tr).find('td[headers="selezionaStruttura"] a').attr('href');
+                    
+                    bot.sendMessage(telegramChatId, `There is an availability in : ${location}. Book it now: https://www.passaportonline.poliziadistato.it/${href}`)
+                        .then(() => console.log('Notification sent successfully'))
+                        .catch((error) => console.error(`Error sending notification: ${error}`));
+                }
+            });
         } else {
             console.log(`No availability in ${location}`);
         }
     }).catch(function (error) {
         bot.sendMessage(telegramChatId, `Error: ${error}`)
-        .then(() => console.log('Notification sent successfully'))
-        .catch((error) => console.error(`Error sending notification: ${error}`));
+            .then(() => console.log('Notification sent successfully'))
+            .catch((error) => console.error(`Error sending notification: ${error}`));
     });
 };
 
