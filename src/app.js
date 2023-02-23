@@ -71,7 +71,7 @@ const checkAvailability = () => {
 
                     //exclude
                     const city = $(tr).find('td[headers="citta"]').text();
-                    if (city != "RHO-PERO" || city != "SESTO SAN GIOVANNI" || city != "CINISELLO BALSAMO")
+                    if (city != "RHO-PERO" && city != "SESTO SAN GIOVANNI" && city != "CINISELLO BALSAMO")
                         bot.sendMessage(telegramChatId, `There is an availability in : ${location} - ${city}. Book it now: https://www.passaportonline.poliziadistato.it/${href}`)
                             .then(() => console.log('Notification sent successfully'))
                             .catch((error) => console.error(`Error sending notification: ${error}`));
