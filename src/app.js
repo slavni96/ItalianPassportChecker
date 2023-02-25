@@ -10,9 +10,57 @@ const enableNotify = process.env.ENABLE_NOTIFY;
 const verbose = process.env.VERBOSE;
 const telegramKey = process.env.TELEGRAM_BOT_TOKEN;
 const telegramChatId = process.env.TELEGRAM_CHATID;
+const exclude = [ 'RHO-PERO', 'CINISELLO BALSAMO' ];
 
 // create a new bot with your bot token
 const bot = new TelegramBot(telegramKey, { polling: false });
+const chatbot = new TelegramBot(telegramKey, { polling: true });
+
+chatbot.on('message', (msg) => {
+    if (msg.text === '/start') {
+        chatbot.sendMessage(msg.chat.id, 'Hello! This is your bot. Type /help to see the available commands.');
+    }
+    else if (msg.text === '/help') {
+        chatbot.sendMessage(msg.chat.id, 'Available commands:\n/start - Start the bot\n/help - Show this help message\n/info - Show some information');
+    }
+    else if (msg.text === '/info') {
+        chatbot.sendMessage(msg.chat.id, 'This is some information about the bot.');
+    }
+    else if (msg.text.startsWith('/fetch')) {
+        console.log(msg.text);
+        const parameters = extractParameters(msg.text);
+        const plog = JSON.stringify(parameters);
+        //i.e /fetch LOCATION=MI EXCLUDE=RHO-PERO,CINISELLO_BALSAMO WAIT=100
+
+        chatbot.sendMessage(msg.chat.id, `A seach will be launched with the following ${plog}`);
+
+        setInterval(() => {
+            console.log("Starting with params...")
+            console.log(parameters)
+            checkAvailability(chatbot, parameters["LOCATION"], parameters["EXCLUDE"]);
+        }, waitTime * parameters["WAIT"]); // Convert seconds to milliseconds and repeat check every X seconds.
+    }
+});
+
+const extractParameters = (str) => {
+    const params = {};
+    // Split the string into an array of individual parameters
+    const parts = str.split(' ');
+
+    // Loop through the parameters and extract the key-value pairs
+    parts.forEach(part => {
+        const [key, value] = part.split('=');
+
+        if (key === 'EXCLUDE') {
+            // Handle the "EXCLUDE" parameter as an array of values
+            params[key] = value.split(',').map(str => str.replace('_', ' '));
+        } else {
+            // Store other parameters as simple key-value pairs
+            params[key] = value;
+        }
+    });
+    return params;
+}
 
 const getRandomGUID = () => {
     // Function to generate random GUID
@@ -39,7 +87,7 @@ const generateHeaders = () => {
     return headers;
 };
 
-const checkAvailability = () => {
+const checkAvailability = (bot, location, exclude) => {
 
     const options = {
         method: 'GET',
@@ -71,7 +119,8 @@ const checkAvailability = () => {
 
                     //exclude
                     const city = $(tr).find('td[headers="citta"]').text();
-                    if (city != "RHO-PERO" && city != "SESTO SAN GIOVANNI" && city != "CINISELLO BALSAMO") {
+                    
+                    if (!exclude.includes(city)) {
                         const url = `https://www.passaportonline.poliziadistato.it/${href}`;
                         console.log(url)
 
@@ -100,5 +149,5 @@ const checkAvailability = () => {
 
 setInterval(() => {
     console.log("Starting...")
-    checkAvailability();
+    checkAvailability(bot, location, exclude);
 }, waitTime * 100); // Convert seconds to milliseconds and repeat check every X seconds.
